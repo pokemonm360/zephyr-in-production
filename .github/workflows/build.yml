@@ -29,21 +29,19 @@ jobs:
           KEY_PEM: ${{ secrets.MCUBOOT_SIGNING_KEY }}
         run: |
           mkdir -p packt-training/keys
+          test -n "$KEY_PEM"
           printf '%s' "$KEY_PEM" > packt-training/keys/my-key.pem
           chmod 600 packt-training/keys/my-key.pem
-          # Print the key - just for the training purposes
-          cat packt-training/keys/my-key.pem
 
       - name: Build (production target, signed)
         working-directory: packt-training
         run: |
-          # TODO 1 - build
-          west build -b training app --sysbuild -d build/prod --pristine
+          west build -b training app --sysbuild -d build/prod --pristine=always
 
       - name: Verify signature
         working-directory: packt-training
         run: |
-          # TODO 2 - verify (fail the build if signing didn't happen)
+          test -f build/prod/app/zephyr/zephyr.signed.bin
           imgtool verify -k keys/my-key.pem build/prod/app/zephyr/zephyr.signed.bin
 
 
@@ -52,7 +50,7 @@ jobs:
         with:
           name: firmware-${{ github.sha }}
           path: |
-            # TODO 3 - upload
-            - zephyr-in-production/build/prod/mcuboot/zephyr/zephyr.bin
-            - zephyr-in-production/build/prod/app/zephyr/zephyr.signed.bin
+            packt-training/build/prod/mcuboot/zephyr/zephyr.bin
+            packt-training/build/prod/app/zephyr/zephyr.signed.bin
+            packt-training/build/prod/app/zephyr/zephyr.elf
           retention-days: 30
