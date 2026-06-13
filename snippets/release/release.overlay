@@ -1,0 +1,9 @@
+/ {
+    aliases {
+        led0 = &blue_led;
+    };
+
+    zephyr,user {
+        blink-period-ms = <500>;
+    };
+};
